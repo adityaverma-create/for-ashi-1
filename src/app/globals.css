@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+:root{--wine:#7B0323;--wine-2:#6F0320;--wine-3:#62021C;--wine-4:#560219;--wine-5:#4A0215;--wine-6:#3E0212;--cream:#FFF4E8;--muted:#d9b9b7;--rose:#d6a1a4}*{box-sizing:border-box}html{background:#3E0212}body{margin:0;background:linear-gradient(112deg,#7B0323 0%,#6F0320 22%,#62021C 44%,#560219 65%,#4A0215 82%,#3E0212 100%);color:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer}.serif{font-family:'Playfair Display',serif}.shell{max-width:1120px;margin:auto;padding:26px 22px 100px}.glass{background:linear-gradient(145deg,rgba(255,244,232,.15),rgba(255,244,232,.055));border:1px solid rgba(255,235,219,.17);box-shadow:0 20px 70px #12030b55;backdrop-filter:blur(12px)}.paper{background:#FFF4E8;color:#48202c;border-radius:22px;box-shadow:0 18px 50px #16030b55}.btn{border:1px solid #d8b9a6;background:#FFF4E8;color:#512236;border-radius:999px;padding:11px 18px;font-weight:600;transition:.2s}.btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px #16030b55}.btn-ghost{background:transparent;color:#FFF4E8;border-color:#8c5365}.field{width:100%;border:1px solid #d8c5b8;background:#fffaf4;color:#46202c;border-radius:12px;padding:12px 14px;outline:none}.field:focus{border-color:#a45a70;box-shadow:0 0 0 3px #a45a7022}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav button{border:1px solid #8e5368;background:#ffffff08;color:#FFF4E8;border-radius:999px;padding:9px 15px;font-size:13px}.nav button.active{background:#FFF4E8;color:#512236;border-color:#FFF4E8}.fade{animation:fade .5s ease both}@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.tree{position:relative;min-height:330px;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#704050,#35101f 65%,#2a0917)}.tree:before{content:"";position:absolute;bottom:-90px;left:50%;width:14px;height:300px;background:linear-gradient(#a47b62,#765044);border-radius:50%;transform:rotate(2deg)}.photo{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:13px}.floating{position:fixed;right:25px;bottom:25px;width:60px;height:60px;border-radius:50%;background:#f4e6d5;color:#541f34;display:grid;place-items:center;box-shadow:0 12px 35px #10020a88;z-index:20;border:1px solid #e5c6ae}.heart{color:#d9a0a5}.smallcaps{letter-spacing:.22em;text-transform:uppercase;font-size:10px;color:#d6b7b4}@media(max-width:640px){.shell{padding:20px 15px 100px}.paper{border-radius:17px}.nav{gap:6px}.nav button{padding:8px 12px}.floating{right:18px;bottom:18px}}
+
+
+/* Deep burgundy palette refinement */
+:root{--wine:#19000b;--cream:#f7eddf;--muted:#cdb8b1;--rose:#d6a1a4}
+html,body{background:#19000b!important}
+body{background:radial-gradient(ellipse at 50% -12%,#4b1028 0%,#2c0618 42%,#19000b 76%,#100008 100%)!important}
+/* Quiet, always-on scrapbook sticker Easter eggs */
+body::before,body::after{content:"";position:fixed;z-index:0;pointer-events:none;white-space:pre;line-height:2.8;font-size:clamp(19px,2.2vw,27px);letter-spacing:13px;opacity:.14;filter:saturate(.72);user-select:none}
+body::before{content:"♡     ✦\A      ☁       ♡\A  ✿        ✧\A       ♡       ✦";top:7%;left:2%;transform:rotate(-13deg)}
+body::after{content:"✧       ♡\A    ✿       ☁\A ♡       ✦     ♡\A      ✧";right:1.5%;bottom:5%;transform:rotate(12deg)}
+.shell{position:relative;z-index:1}
+@media(max-width:640px){body::before{left:-9px;top:10%;font-size:18px;letter-spacing:8px}body::after{right:-8px;bottom:7%;font-size:18px;letter-spacing:8px}}
+
+.sticker-layer{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.sticker-egg{position:absolute;object-fit:contain;opacity:.20;filter:saturate(.82);mix-blend-mode:screen;user-select:none}
+.sticker-egg.one{width:clamp(62px,8vw,112px);left:2.2%;top:17%;transform:rotate(-13deg)}
+.sticker-egg.two{width:clamp(54px,6.5vw,88px);right:3%;top:34%;transform:rotate(10deg)}
+.sticker-egg.three{width:clamp(65px,8vw,108px);left:4%;bottom:12%;transform:rotate(8deg)}
+.sticker-egg.four{width:clamp(62px,7vw,98px);right:4%;bottom:10%;transform:rotate(-9deg)}
+@media(max-width:640px){.sticker-egg{opacity:.15}.sticker-egg.one{left:0;top:10%}.sticker-egg.two{right:0;top:30%}.sticker-egg.three{left:0;bottom:7%}.sticker-egg.four{right:0;bottom:6%}}
