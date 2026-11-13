@@ -1,35 +1,3 @@
-"use client";
-import { useEffect,useRef,useState } from "react";
-import { Camera,Heart,LogOut,Feather,ChevronRight } from "lucide-react";
-type Scrap={
-  photos:{path:string,caption:string,date:string,owner?:"Aditya"|"Ashi",sharedWith?:("Aditya"|"Ashi")[]}[],
-  diary:{text:string,date:string,owner?:"Aditya"|"Ashi",sharedWith?:("Aditya"|"Ashi")[]}[],
-  ritual:boolean[]
-}; 
-const empty:Scrap={photos:[],diary:[],ritual:[false,false,false,false]};
-const rituals=["Save one little moment from today","Write a note for future us","Choose a memory to revisit together","Plan one small thing to look forward to"];
-function StickerEggs(){return <div className="sticker-layer" aria-hidden="true"><img className="sticker-egg one" src="/stickers/watermelon-hamster.webp"/><img className="sticker-egg two" src="/stickers/pixel-cat.webp"/><img className="sticker-egg three" src="/stickers/silly-cat.webp"/><img className="sticker-egg four" src="/stickers/blue-face.webp"/></div>}
-export default function Home(){
-    const [showAnniversary, setShowAnniversary] = useState(false);
-
-useEffect(() => {
-  if (!localStorage.getItem("anniversary-welcome-seen")) {
-    setShowAnniversary(true);
-  }
-}, []);
-
-function closeAnniversary() {
-  localStorage.setItem("anniversary-welcome-seen", "yes");
-  setShowAnniversary(false);
-}
- const [shared,S]=useState(false),[profile,P]=useState<"Aditya"|"Ashi"|null>(null),[configured,C]=useState(false),[unlocked,U]=useState(false),[question,Q]=useState(""),[mode,M]=useState<"login"|"setup"|"recover">("login"),[pin,N]=useState(""),[answer,A]=useState(""),[securityQuestion,SQ]=useState(""),[password,SP]=useState(""),[error,E]=useState(""),[busy,B]=useState(false),[data,D]=useState<Scrap>(empty),[tab,T]=useState("home"),[note,NT]=useState(""),[caption,CP]=useState("");
- const [shareWith, setShareWith] = useState<"private"|"Aditya"|"Ashi">("private");
- const file=useRef<HTMLInputElement>(null);
- async function checkShared(){const r=await fetch("/api/profile?profile=Aditya");if(r.status!==401){S(true);return true;}return false;}
- useEffect(()=>{(async()=>{const ok=await checkShared();if(ok){const s=await fetch("/api/state");if(s.ok){const d=await s.json();D(d);P(d.profile||"Aditya");U(true);}}})();},[]);
- async function sharedLogin(){E("");B(true);try{const r=await fetch("/api/shared",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});const x=await r.json();if(!r.ok)throw Error(x.error);S(true);P(null);}catch(e:any){E(e.message)}finally{B(false)}}
- async function choose(p:"Aditya"|"Ashi"){P(p);U(false);E("");N("");A("");const r=await fetch("/api/profile?profile="+p);const x=await r.json();C(x.configured);Q(x.question||"");M(x.configured?"login":"setup");}
- async function profileAction(){if(!profile)return;E("");B(true);try{const body:any={profile,action:mode,pin};if(mode==="setup"){body.question=securityQuestion;body.answer=answer;}if(mode==="recover")body.answer=answer;const r=await fetch("/api/profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const x=await r.json();if(!r.ok)throw Error(x.error);const state=await fetch("/api/state");D(state.ok?await state.json():empty);U(true);}catch(e:any){E(e.message)}finally{B(false)}}
  async function save(next:Scrap){D(next);const r=await fetch("/api/state",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(next)});if(!r.ok)E("Could not save. Please try again.");}
 async function upload(f:File){
   B(true);
@@ -91,155 +59,63 @@ async function upload(f:File){
  <nav className="nav mb-6">{[{id:"home",label:"Our story"},{id:"tree",label:"Memory tree"},{id:"diary",label:"Little notes"},{id:"ritual",label:"Daily ritual"}].map(x=><button key={x.id} className={tab===x.id?"active":""} onClick={()=>T(x.id)}>{x.label}</button>)}</nav>
  {tab==="home"&&<div className="grid md:grid-cols-[1.2fr_.8fr] gap-5 fade"><section className="paper p-6 sm:p-8"><div className="smallcaps !text-[#956778] mb-3">the little things</div><h2 className="serif text-3xl mb-3">A collection of us.</h2><p className="text-sm leading-7 text-[#77515b]">A photograph, a sentence, a silly moment, a day we never want to forget. This is where we keep them safe.</p><div className="grid grid-cols-3 gap-2 mt-6">{data.photos.slice(0,3).map((p,i)=><img key={i} className="photo" src={"/api/image?path="+encodeURIComponent(p.path)} alt="Our memory"/>)}{data.photos.length===0&&<div className="col-span-3 rounded-xl bg-[#ead9ca] p-7 text-center text-sm text-[#8c6970]">Our first memory is waiting to be added ♡</div>}</div><button className="mt-5 text-sm font-semibold text-[#7b4056]" onClick={()=>T("tree")}>Visit the memory tree →</button></section><section className="glass rounded-[22px] p-6 flex flex-col justify-between"><div><div className="smallcaps mb-3">a tiny reminder</div><div className="serif text-3xl leading-snug">“I choose you in all the little moments.”</div></div><div className="mt-8 pt-5 border-t border-[#ffffff22] flex justify-between items-center text-xs text-[#d6b7b6]"><span>with love, always</span><Heart className="heart" size={18}/></div></section></div>}
  {tab==="tree"&&<section className="glass rounded-[25px] p-5 sm:p-7 fade"><div className="text-center mb-5"><div className="smallcaps">growing, one memory at a time</div><h2 className="serif text-3xl mt-2">Our Memory Tree</h2><p className="text-xs text-[#d5b8b9] mt-2">Every photo is another little leaf in our story.</p></div><div className="tree rounded-2xl p-4"><div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-2xl mx-auto">{data.photos.map((p,i)=><figure key={i} className="bg-[#f8eee1] text-[#54263a] p-2 rounded-lg shadow-xl rotate-[-2deg] even:rotate-[2deg]"><img className="w-full aspect-square object-cover rounded" src={"/api/image?path="+encodeURIComponent(p.path)} alt="Memory"/><figcaption className="text-xs text-center mt-2 serif">{p.caption||"a moment with you"}</figcaption></figure>)}</div>{data.photos.length===0&&<div className="relative z-10 text-center py-20 text-sm text-[#e5d0ca]">Our tree is waiting for its first leaves. Add a photo to begin ♡</div>}</div><p className="text-center text-xs text-[#d6b6b8] mt-4">{data.photos.length} little {data.photos.length===1?"memory":"memories"} saved</p></section>}
- {tab==="diary"&&<section className="paper p-6 sm:p-8 fade"><div className="smallcaps !text-[#956778]">a note to keep</div><h2 className="serif text-3xl mt-2 mb-4">Little Notes</h2><textarea className="field min-h-28 mb-3" value={note} onChange={e=>NT(e.target.value)} placeholder="Write something you want to remember…"/><select
-  className="field mb-3"
-  value={shareWith}
-  onChange={e=>setShareWith(e.target.value)}
->
-  <option value="private">🔒 Just me</option>
-  <option value={profile==="Aditya"?"Ashi":"Aditya"}>
-    ❤️ Share with {profile==="Aditya"?"Ashi":"Aditya"}
-  </option>
-</select>
-
-
-
-
-
-<button className="btn" onClick={()=>{
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-
-  if(note.trim()){
-    save({
-      ...data,
-      diary:[
-        {
-          text:note.trim(),
-          date:new Date().toISOString(),
-          owner:profile!,
-          sharedWith:shareWith==="private"?[]:[shareWith]
-        },
-        ...data.diary
-      ]
-    });
-    NT("");
-    setShareWith("private");
-  }
-}}>
-  <Feather size={15} className="inline mr-2"/>
-  Save this note
-</button>
-if(note.trim()){save({...data,diary:[{text:note.trim(),date:new Date().toISOString()},...data.diary]});NT("");
-setShareWith("private")}}}><Feather size={15} className="inline mr-2"/>Save this note</button><div className="mt-7 space-y-3">{data.diary.map((n,i)=><article key={i} className="bg-[#ecddcf] rounded-xl p-4"><p className="serif text-lg whitespace-pre-wrap">{n.text}</p><p className="text-[10px] text-[#9a747d] mt-3">{new Date(n.date).toLocaleDateString(undefined,{dateStyle:"long"})}</p></article>)}</div>{!data.diary.length&&<p className="text-sm text-[#9b7c80] mt-6">No notes yet. Leave a little piece of your day here.</p>}</section>}
+ {tab==="diary"&&<section className="paper p-6 sm:p-8 fade">
+   <div className="smallcaps !text-[#956778]">a note to keep</div>
+   <h2 className="serif text-3xl mt-2 mb-4">Little Notes</h2>
+   <textarea
+     className="field min-h-28 mb-3"
+     value={note}
+     onChange={e=>NT(e.target.value)}
+     placeholder="Write something you want to remember…"
+   />
+   <select
+     className="field mb-3"
+     value={shareWith}
+     onChange={e=>setShareWith(e.target.value as "private"|"Aditya"|"Ashi")}
+   >
+     <option value="private">🔒 Just me</option>
+     <option value={profile==="Aditya"?"Ashi":"Aditya"}>
+       ❤️ Share with {profile==="Aditya"?"Ashi":"Aditya"}
+     </option>
+   </select>
+   <button
+     className="btn"
+     onClick={()=>{
+       if(note.trim()){
+         save({
+           ...data,
+           diary:[
+             {
+               text:note.trim(),
+               date:new Date().toISOString(),
+               owner:profile!,
+               sharedWith:shareWith==="private"?[]:[shareWith]
+             },
+             ...data.diary
+           ]
+         });
+         NT("");
+         setShareWith("private");
+       }
+     }}
+   >
+     <Feather size={15} className="inline mr-2"/>
+     Save this note
+   </button>
+   <div className="mt-7 space-y-3">
+     {data.diary.map((n,i)=><article key={i} className="bg-[#ecddcf] rounded-xl p-4">
+       <p className="serif text-lg whitespace-pre-wrap">{n.text}</p>
+       <p className="text-[10px] text-[#9a747d] mt-3">{new Date(n.date).toLocaleDateString(undefined,{dateStyle:"long"})}</p>
+     </article>)}
+   </div>
+   {!data.diary.length&&<p className="text-sm text-[#9b7c80] mt-6">No notes yet. Leave a little piece of your day here.</p>}
+ </section>}
  {tab==="ritual"&&<section className="glass rounded-[25px] p-6 sm:p-8 fade"><div className="smallcaps">our little tradition</div><h2 className="serif text-3xl mt-2 mb-2">The Daily Ritual</h2><p className="text-sm text-[#d5b9ba] mb-6">Tiny things, done with love, become the biggest memories.</p><div className="space-y-3">{rituals.map((r,i)=><label key={i} className="flex items-center gap-4 p-4 rounded-xl border border-[#ffffff20] bg-[#ffffff08] cursor-pointer"><input type="checkbox" checked={!!data.ritual[i]} onChange={e=>{const a=[...data.ritual];a[i]=e.target.checked;save({...data,ritual:a})}} className="accent-[#d9a1a5] w-4 h-4"/><span className={data.ritual[i]?"line-through opacity-50":"text-sm"}>{r}</span><Heart size={14} className="ml-auto heart"/></label>)}</div></section>}
  <footer className="text-center mt-10 text-xs text-[#b9939c]">made with a little bit of magic ♡ just for us</footer>
  <select
   className="field fixed bottom-6 right-20 z-50 w-44 text-xs"
   value={shareWith}
-  onChange={e=>setShareWith(e.target.value)}
+  onChange={e=>setShareWith(e.target.value as "private"|"Aditya"|"Ashi")}
 >
   <option value="private">🔒 Just me</option>
   {profile && (
@@ -250,4 +126,3 @@ setShareWith("private")}}}><Feather size={15} className="inline mr-2"/>Save this
 </select>
 <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)upload(f);e.currentTarget.value=""}}/><button className="floating" title="Add a memory" onClick={()=>file.current?.click()}><Camera size={23}/></button>{error&&<div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#f7eddf] text-[#54263a] rounded-full px-5 py-3 text-sm shadow-xl">{error}</div>}
  </main>;
-}
