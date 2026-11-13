@@ -6,6 +6,18 @@ const empty:Scrap={photos:[],diary:[],ritual:[false,false,false,false]};
 const rituals=["Save one little moment from today","Write a note for future us","Choose a memory to revisit together","Plan one small thing to look forward to"];
 function StickerEggs(){return <div className="sticker-layer" aria-hidden="true"><img className="sticker-egg one" src="/stickers/watermelon-hamster.webp"/><img className="sticker-egg two" src="/stickers/pixel-cat.webp"/><img className="sticker-egg three" src="/stickers/silly-cat.webp"/><img className="sticker-egg four" src="/stickers/blue-face.webp"/></div>}
 export default function Home(){
+    const [showAnniversary, setShowAnniversary] = useState(false);
+
+useEffect(() => {
+  if (!localStorage.getItem("anniversary-welcome-seen")) {
+    setShowAnniversary(true);
+  }
+}, []);
+
+function closeAnniversary() {
+  localStorage.setItem("anniversary-welcome-seen", "yes");
+  setShowAnniversary(false);
+}
  const [shared,S]=useState(false),[profile,P]=useState<"Aditya"|"Ashi"|null>(null),[configured,C]=useState(false),[unlocked,U]=useState(false),[question,Q]=useState(""),[mode,M]=useState<"login"|"setup"|"recover">("login"),[pin,N]=useState(""),[answer,A]=useState(""),[securityQuestion,SQ]=useState(""),[password,SP]=useState(""),[error,E]=useState(""),[busy,B]=useState(false),[data,D]=useState<Scrap>(empty),[tab,T]=useState("home"),[note,NT]=useState(""),[caption,CP]=useState("");
  const file=useRef<HTMLInputElement>(null);
  async function checkShared(){const r=await fetch("/api/profile?profile=Aditya");if(r.status!==401){S(true);return true;}return false;}
