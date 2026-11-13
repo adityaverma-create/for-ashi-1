@@ -1,5 +1,37 @@
+"use client";
+import { useEffect,useRef,useState } from "react";
+import { Camera,Heart,LogOut,Feather,ChevronRight } from "lucide-react";
+type Scrap={
+  photos:{path:string,caption:string,date:string,owner?:"Aditya"|"Ashi",sharedWith?:("Aditya"|"Ashi")[]}[],
+  diary:{text:string,date:string,owner?:"Aditya"|"Ashi",sharedWith?:("Aditya"|"Ashi")[]}[],
+  ritual:boolean[]
+}; 
+const empty:Scrap={photos:[],diary:[],ritual:[false,false,false,false]};
+const rituals=["Save one little moment from today","Write a note for future us","Choose a memory to revisit together","Plan one small thing to look forward to"];
+function StickerEggs(){return <div className="sticker-layer" aria-hidden="true"><img className="sticker-egg one" src="/stickers/watermelon-hamster.webp"/><img className="sticker-egg two" src="/stickers/pixel-cat.webp"/><img className="sticker-egg three" src="/stickers/silly-cat.webp"/><img className="sticker-egg four" src="/stickers/blue-face.webp"/></div>}
+export default function Home(){
+    const [showAnniversary, setShowAnniversary] = useState(false);
+
+useEffect(() => {
+  if (!localStorage.getItem("anniversary-welcome-seen")) {
+    setShowAnniversary(true);
+  }
+}, []);
+
+function closeAnniversary() {
+  localStorage.setItem("anniversary-welcome-seen", "yes");
+  setShowAnniversary(false);
+}
+ const [shared,S]=useState(false),[profile,P]=useState<"Aditya"|"Ashi"|null>(null),[configured,C]=useState(false),[unlocked,U]=useState(false),[question,Q]=useState(""),[mode,M]=useState<"login"|"setup"|"recover">("login"),[pin,N]=useState(""),[answer,A]=useState(""),[securityQuestion,SQ]=useState(""),[password,SP]=useState(""),[error,E]=useState(""),[busy,B]=useState(false),[data,D]=useState<Scrap>(empty),[tab,T]=useState("home"),[note,NT]=useState(""),[caption,CP]=useState("");
+ const [shareWith, setShareWith] = useState<"private"|"Aditya"|"Ashi">("private");
+ const file=useRef<HTMLInputElement>(null);
+ async function checkShared(){const r=await fetch("/api/profile?profile=Aditya");if(r.status!==401){S(true);return true;}return false;}
+ useEffect(()=>{(async()=>{const ok=await checkShared();if(ok){const s=await fetch("/api/state");if(s.ok){const d=await s.json();D(d);P(d.profile||"Aditya");U(true);}}})();},[]);
+ async function sharedLogin(){E("");B(true);try{const r=await fetch("/api/shared",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})});const x=await r.json();if(!r.ok)throw Error(x.error);S(true);P(null);}catch(e:any){E(e.message)}finally{B(false)}}
+ async function choose(p:"Aditya"|"Ashi"){P(p);U(false);E("");N("");A("");const r=await fetch("/api/profile?profile="+p);const x=await r.json();C(x.configured);Q(x.question||"");M(x.configured?"login":"setup");}
+ async function profileAction(){if(!profile)return;E("");B(true);try{const body:any={profile,action:mode,pin};if(mode==="setup"){body.question=securityQuestion;body.answer=answer;}if(mode==="recover")body.answer=answer;const r=await fetch("/api/profile",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const x=await r.json();if(!r.ok)throw Error(x.error);const state=await fetch("/api/state");D(state.ok?await state.json():empty);U(true);}catch(e:any){E(e.message)}finally{B(false)}}
  async function save(next:Scrap){D(next);const r=await fetch("/api/state",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(next)});if(!r.ok)E("Could not save. Please try again.");}
-async function upload(f:File){
+ async function upload(f:File){
   B(true);
   E("");
   try{
@@ -54,7 +86,7 @@ async function upload(f:File){
 }if(!shared)return <main className="min-h-screen grid place-items-center px-5"><StickerEggs/><section className="glass rounded-[30px] p-8 sm:p-12 w-full max-w-md text-center fade"><div className="smallcaps mb-5">a private little universe</div><div className="serif text-5xl mb-3">Our Little<br/><i className="heart">Forever</i></div><p className="text-sm text-[#d7bdba] mb-8">A place for all the little things that mean everything.</p><div className="text-left"><label className="smallcaps block mb-2">Our shared password</label><input className="field mb-4" type="password" value={password} onChange={e=>SP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sharedLogin()} placeholder="Enter the secret password"/><button className="btn w-full" onClick={sharedLogin} disabled={busy}>{busy?"Opening…":"Enter our space"} <ChevronRight className="inline ml-1" size={16}/></button></div>{error&&<p className="text-rose-300 text-sm mt-4">{error}</p>}<p className="text-xs text-[#a88b91] mt-8">made of memories, kept just for us ♡</p></section></main>;
  if(!profile)return <main className="min-h-screen grid place-items-center px-5"><StickerEggs/><section className="glass rounded-[30px] p-8 sm:p-12 w-full max-w-md text-center fade"><div className="smallcaps mb-4">welcome back</div><h1 className="serif text-4xl mb-3">Who's here?</h1><p className="text-sm text-[#d7bdba] mb-8">Choose your little corner of forever.</p><div className="grid grid-cols-2 gap-3"><button onClick={()=>choose("Aditya")} className="paper p-5 hover:-translate-y-1 transition"><div className="serif text-2xl">Aditya</div><div className="text-xs mt-2 opacity-60">your space</div></button><button onClick={()=>choose("Ashi")} className="paper p-5 hover:-translate-y-1 transition"><div className="serif text-2xl">Ashi</div><div className="text-xs mt-2 opacity-60">your space</div></button></div><button className="text-xs text-[#c4a5aa] mt-7" onClick={logout}>Sign out</button></section></main>;
  if(!unlocked)return <main className="min-h-screen grid place-items-center px-5"><StickerEggs/><section className="glass rounded-[30px] p-8 sm:p-10 w-full max-w-md fade"><div className="smallcaps mb-4">{profile}'s private corner</div><h1 className="serif text-4xl mb-2">{mode==="setup"?"Make it yours":mode==="recover"?"A little memory check":"Welcome back"}</h1><p className="text-sm text-[#d7bdba] mb-7">{mode==="setup"?"Create your personal PIN and a recovery question.":mode==="recover"?"Answer your recovery question to choose a new PIN.":"Enter your personal PIN to continue."}</p>{mode==="setup"&&<><label className="smallcaps block mb-2">Your recovery question</label><input className="field mb-3" value={securityQuestion} onChange={e=>SQ(e.target.value)} placeholder="e.g. What was our first movie?"/><label className="smallcaps block mb-2">Your answer</label><input className="field mb-3" value={answer} onChange={e=>A(e.target.value)} placeholder="Your private answer"/></>}{mode==="recover"&&<><div className="paper p-4 mb-3 text-sm">{question}</div><input className="field mb-4" value={answer} onChange={e=>A(e.target.value)} placeholder="Your answer"/></>}{mode==="login"&&<label className="smallcaps block mb-2">Your 6-digit PIN</label>}<input className="field mb-4 text-center tracking-[.5em] text-xl" inputMode="numeric" maxLength={6} type="password" value={pin} onChange={e=>N(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="••••••"/><button className="btn w-full" onClick={profileAction} disabled={busy}>{busy?"One moment…":mode==="setup"?"Create my private space":mode==="recover"?"Save new PIN":"Unlock my space"}</button>{mode==="login"&&<button className="text-xs text-[#d8b4bb] mt-5 w-full" onClick={()=>M("recover")}>Forgot PIN?</button>}{mode==="recover"&&<button className="text-xs text-[#d8b4bb] mt-5 w-full" onClick={()=>M("login")}>Back to PIN</button>}{error&&<p className="text-rose-300 text-sm mt-4">{error}</p>}</section></main>;
- return <main className="shell fade"><StickerEggs/><header className="flex items-center justify-between gap-4 mb-8"><div><div className="smallcaps">a little place for us</div><div className="serif text-3xl sm:text-4xl mt-1">Our Little <i className="heart">Forever</i></div></div><button className="btn btn-ghost text-xs" onClick={logout}><LogOut size={14} className="inline mr-2"/>Leave</button></header>
+  return <main className="shell fade"><StickerEggs/><header className="flex items-center justify-between gap-4 mb-8"><div><div className="smallcaps">a little place for us</div><div className="serif text-3xl sm:text-4xl mt-1">Our Little <i className="heart">Forever</i></div></div><button className="btn btn-ghost text-xs" onClick={logout}><LogOut size={14} className="inline mr-2"/>Leave</button></header>
  <section className="glass rounded-[28px] p-6 sm:p-9 mb-6 relative overflow-hidden"><div className="absolute -right-8 -top-12 text-[190px] opacity-[.06] serif">♡</div><div className="smallcaps mb-3">dear {profile}</div><h1 className="serif text-4xl sm:text-5xl leading-tight max-w-xl">Somewhere between hello and forever, <i className="heart">we found us.</i></h1><p className="text-sm text-[#d8c1c0] mt-4 max-w-lg">Every ordinary day becomes a little more beautiful when it becomes a memory with you.</p><div className="mt-6 flex items-center gap-2 text-xs text-[#d7b8b9]"><Heart size={13} className="heart"/> kept close, always</div></section>
  <nav className="nav mb-6">{[{id:"home",label:"Our story"},{id:"tree",label:"Memory tree"},{id:"diary",label:"Little notes"},{id:"ritual",label:"Daily ritual"}].map(x=><button key={x.id} className={tab===x.id?"active":""} onClick={()=>T(x.id)}>{x.label}</button>)}</nav>
  {tab==="home"&&<div className="grid md:grid-cols-[1.2fr_.8fr] gap-5 fade"><section className="paper p-6 sm:p-8"><div className="smallcaps !text-[#956778] mb-3">the little things</div><h2 className="serif text-3xl mb-3">A collection of us.</h2><p className="text-sm leading-7 text-[#77515b]">A photograph, a sentence, a silly moment, a day we never want to forget. This is where we keep them safe.</p><div className="grid grid-cols-3 gap-2 mt-6">{data.photos.slice(0,3).map((p,i)=><img key={i} className="photo" src={"/api/image?path="+encodeURIComponent(p.path)} alt="Our memory"/>)}{data.photos.length===0&&<div className="col-span-3 rounded-xl bg-[#ead9ca] p-7 text-center text-sm text-[#8c6970]">Our first memory is waiting to be added ♡</div>}</div><button className="mt-5 text-sm font-semibold text-[#7b4056]" onClick={()=>T("tree")}>Visit the memory tree →</button></section><section className="glass rounded-[22px] p-6 flex flex-col justify-between"><div><div className="smallcaps mb-3">a tiny reminder</div><div className="serif text-3xl leading-snug">“I choose you in all the little moments.”</div></div><div className="mt-8 pt-5 border-t border-[#ffffff22] flex justify-between items-center text-xs text-[#d6b7b6]"><span>with love, always</span><Heart className="heart" size={18}/></div></section></div>}
@@ -71,7 +103,7 @@ async function upload(f:File){
    <select
      className="field mb-3"
      value={shareWith}
-     onChange={e=>setShareWith(e.target.value as "private"|"Aditya"|"Ashi")}
+     onChange={e=>{const value=e.target.value;if(value==="private"||value==="Aditya"||value==="Ashi")setShareWith(value)}}
    >
      <option value="private">🔒 Just me</option>
      <option value={profile==="Aditya"?"Ashi":"Aditya"}>
@@ -115,7 +147,7 @@ async function upload(f:File){
  <select
   className="field fixed bottom-6 right-20 z-50 w-44 text-xs"
   value={shareWith}
-  onChange={e=>setShareWith(e.target.value as "private"|"Aditya"|"Ashi")}
+  onChange={e=>{const value=e.target.value;if(value==="private"||value==="Aditya"||value==="Ashi")setShareWith(value)}}
 >
   <option value="private">🔒 Just me</option>
   {profile && (
@@ -126,3 +158,4 @@ async function upload(f:File){
 </select>
 <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)upload(f);e.currentTarget.value=""}}/><button className="floating" title="Add a memory" onClick={()=>file.current?.click()}><Camera size={23}/></button>{error&&<div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-[#f7eddf] text-[#54263a] rounded-full px-5 py-3 text-sm shadow-xl">{error}</div>}
  </main>;
+}
